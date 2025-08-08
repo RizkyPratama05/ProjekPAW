@@ -28,35 +28,65 @@ app.use('/admin', adminRoutes);
 app.use('/upload', uploadRoutes);
 app.use('/', authRoutes);
 
-// Halaman utama
-app.get('/', (req, res) => {
-  res.sendFile(path.join(__dirname, 'index.html'));
-});
-
-// Halaman pendaftaran
-app.get('/daftar', (req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'daftar.html'));
-});
-
-// Aksi daftar (POST)
-app.post('/daftar', (req, res) => {
-  console.log('Data yang dikirim:', req.body);
-  // Simpan data ke database jika diperlukan
-  res.sendFile(path.join(__dirname, 'public', 'daftar.html'));
-});
-
-app.post('/daftar', async (req, res) => {
-  const { email, password } = req.body;
-
-  const [existingUser] = await db.query('SELECT * FROM users WHERE email = ?', [email]);
-  if (existingUser.length > 0) {
-    return res.status(400).json({ message: 'Email sudah terdaftar' });
+// Endpoint untuk cek autentikasi
+app.get('/check-auth', (req, res) => {
+  if (req.session.user) {
+    res.json({ authenticated: true, user: req.session.user });
+  } else {
+    res.status(401).json({ authenticated: false });
   }
-
-  await db.query('INSERT INTO users (email, password) VALUES (?, ?)', [email, password]);
-  res.status(201).json({ message: 'Pendaftaran berhasil' });
 });
 
+// Endpoint logout
+app.post('/logout', (req, res) => {
+  req.session.destroy((err) => {
+    if (err) {
+      return res.status(500).json({ message: 'Gagal logout' });
+    }
+    res.clearCookie('connect.sid');
+    res.json({ message: 'Logout berhasil' });
+  });
+});
+
+// Middleware untuk cek autentikasi
+const requireAuth = (req, res, next) => {
+  if (!req.session.user) {
+    return res.status(401).json({ message: 'Silakan login terlebih dahulu untuk mendaftar seminar' });
+  }
+  next();
+};
+
+// Halaman utama - redirect ke beranda user
+app.get('/', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'beranda.html'));
+});
+
+// Halaman pendaftaran - hanya untuk user yang sudah login
+app.get('/daftar', requireAuth, (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'daftar.html'));
+});
+
+// Aksi daftar (POST) - hanya untuk user yang sudah login
+app.post('/daftar', requireAuth, async (req, res) => {
+  const { nama, email } = req.body;
+  const userId = req.session.user.id;
+  
+  try {
+    // Simpan data pendaftaran ke database
+    const query = 'INSERT INTO peserta (nama, email, user_id, status) VALUES (?, ?, ?, ?)';
+    await new Promise((resolve, reject) => {
+      db.query(query, [nama, email, userId, 'Pending'], (err, result) => {
+        if (err) reject(err);
+        else resolve(result);
+      });
+    });
+    
+    res.json({ message: 'Pendaftaran seminar berhasil! Status Anda akan diverifikasi oleh admin.' });
+  } catch (err) {
+    console.error('Error saat mendaftar:', err);
+    res.status(500).json({ message: 'Terjadi kesalahan saat mendaftar seminar' });
+  }
+});
 
 // Ambil semua peserta
 app.get('/peserta', (req, res) => {
