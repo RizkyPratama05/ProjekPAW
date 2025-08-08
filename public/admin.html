@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Admin - Verifikasi Peserta</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 py-10 px-6">
+
+  <h1 class="text-3xl font-bold text-center mb-6 text-blue-700">Dashboard Admin - Verifikasi Peserta</h1>
+
+  <div class="overflow-x-auto">
+    <table class="min-w-full bg-white rounded shadow-md">
+      <thead>
+        <tr class="bg-blue-600 text-white">
+          <th class="py-2 px-4 text-left">#</th>
+          <th class="py-2 px-4 text-left">Nama</th>
+          <th class="py-2 px-4 text-left">Email</th>
+          <th class="py-2 px-4 text-left">Berkas</th>
+          <th class="py-2 px-4 text-left">Status</th>
+          <th class="py-2 px-4 text-left">Aksi</th>
+        </tr>
+      </thead>
+      <tbody id="tabelPeserta"></tbody>
+    </table>
+  </div>
+
+  <script>
+    async function ambilDataPeserta() {
+      const res = await fetch('/peserta');
+      const data = await res.json();
+      const tbody = document.getElementById('tabelPeserta');
+      tbody.innerHTML = "";
+
+      data.forEach((peserta, index) => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td class="border px-4 py-2">${index + 1}</td>
+          <td class="border px-4 py-2">${peserta.nama}</td>
+          <td class="border px-4 py-2">${peserta.email}</td>
+          <td class="border px-4 py-2"><a href="/uploads/${peserta.berkas}" target="_blank" class="text-blue-500 underline">Lihat Berkas</a></td>
+          <td class="border px-4 py-2">${peserta.status || 'Belum Diverifikasi'}</td>
+          <td class="border px-4 py-2">
+            <button onclick="verifikasi(${peserta.id}, 'Lulus')" class="bg-green-500 hover:bg-green-600 text-white px-3 py-1 rounded">Lulus</button>
+            <button onclick="verifikasi(${peserta.id}, 'Tidak Lulus')" class="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded ml-2">Tidak Lulus</button>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    async function verifikasi(id, status) {
+      await fetch(`/verifikasi/${id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status })
+      });
+      ambilDataPeserta();
+    }
+
+    // Load saat halaman dibuka
+    ambilDataPeserta();
+  </script>
+
+</body>
+</html>

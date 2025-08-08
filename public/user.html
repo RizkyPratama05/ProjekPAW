@@ -1,0 +1,10 @@
+<div id="sertifikat"></div>
+
+<script>
+// setelah status dimuat
+if (data.status === 'Lulus') {
+  document.getElementById("sertifikat").innerHTML = `
+    <a href="/user/sertifikat/${data.user_id}" target="_blank" class="mt-4 inline-block bg-green-600 text-white px-4 py-2 rounded">Cetak Sertifikat</a>
+  `;
+}
+</script>
