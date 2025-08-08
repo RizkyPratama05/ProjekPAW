@@ -4,7 +4,7 @@ const mysql = require('mysql2');
 const db = mysql.createConnection({
   host: 'localhost',
   user: 'root',         // ← Ganti sesuai user MySQL kamu
-  password: 'newpassword',         // ← Ganti kalau pakai password
+  password: '',         // ← Ganti kalau pakai password
   database: 'seminar_db'
 });
 

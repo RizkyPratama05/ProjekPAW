@@ -3,43 +3,10 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Form Pendaftaran Seminar</title>
+  <title>Upload Berkas Seminar</title>
   <script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body class="bg-gray-100 flex flex-col items-center justify-center min-h-screen p-4">
-
-  <!-- Form Pendaftaran -->
-  <div class="bg-white p-8 rounded-lg shadow-md w-full max-w-xl mb-10">
-    <h1 class="text-2xl font-bold mb-6 text-center text-blue-600">Form Pendaftaran Seminar</h1>
-
-    <form action="/daftar" method="POST" enctype="multipart/form-data" class="space-y-4">
-      <div>
-        <label for="nama" class="block text-sm font-medium text-gray-700">Nama Lengkap</label>
-        <input type="text" id="nama" name="nama" required
-          class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm px-3 py-2 focus:outline-none focus:ring-blue-500 focus:border-blue-500" />
-      </div>
-
-      <div>
-        <label for="email" class="block text-sm font-medium text-gray-700">Email Aktif</label>
-        <input type="email" id="email" name="email" required
-          class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm px-3 py-2 focus:outline-none focus:ring-blue-500 focus:border-blue-500" />
-      </div>
-
-      <div>
-        <label for="berkas" class="block text-sm font-medium text-gray-700">Upload KTM / Bukti Pendaftaran</label>
-        <input type="file" id="berkas" name="berkas" required
-          class="mt-1 block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:border-0
-                 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100" />
-      </div>
-
-      <div class="flex justify-end">
-        <button type="submit"
-          class="bg-blue-600 text-white px-5 py-2 rounded-md hover:bg-blue-700 transition">
-          Daftar
-        </button>
-      </div>
-    </form>
-  </div>
 
   <!-- Upload Berkas -->
   <section class="bg-white p-6 rounded-lg shadow-md w-full max-w-xl">
