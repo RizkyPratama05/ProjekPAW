@@ -21,7 +21,6 @@ app.use(session({
   resave: false,
   saveUninitialized: true,
 }));
-app.use(express.static('public'));
 
 // Routes
 app.use('/admin', adminRoutes);
@@ -59,6 +58,11 @@ const requireAuth = (req, res, next) => {
 // Halaman utama - redirect ke beranda user
 app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'beranda.html'));
+});
+
+// Halaman upload berkas
+app.get('/upload-page', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'upload.html'));
 });
 
 // Halaman pendaftaran - hanya untuk user yang sudah login

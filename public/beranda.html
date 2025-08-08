@@ -12,10 +12,10 @@
     <div class="container mx-auto px-4 py-6">
       <div class="flex justify-between items-center">
         <h1 class="text-2xl font-bold">Sistem Pendaftaran Seminar</h1>
-        <nav class="flex space-x-4">
+        <nav class="flex space-x-4" id="navbar">
           <a href="/" class="hover:text-blue-200 transition">Beranda</a>
-          <a href="/login.html" class="hover:text-blue-200 transition">Login</a>
-          <a href="/register.html" class="hover:text-blue-200 transition">Register</a>
+          <a href="/login.html" class="hover:text-blue-200 transition" id="loginLink">Login</a>
+          <a href="/register.html" class="hover:text-blue-200 transition" id="registerLink">Register</a>
         </nav>
       </div>
     </div>
@@ -88,23 +88,65 @@
   </footer>
 
   <script>
+    // Cek status login saat halaman dimuat
+    window.addEventListener('load', checkLoginStatus);
+
+    function checkLoginStatus() {
+      fetch('/check-auth', {
+        method: 'GET',
+        credentials: 'include'
+      })
+      .then(response => {
+        if (response.ok) {
+          return response.json();
+        }
+        throw new Error('Not logged in');
+      })
+      .then(data => {
+        // User sudah login, update navbar
+        updateNavbarForLoggedInUser(data.user);
+      })
+      .catch(() => {
+        // User belum login, navbar tetap default
+      });
+    }
+
+    function updateNavbarForLoggedInUser(user) {
+      const navbar = document.getElementById('navbar');
+      navbar.innerHTML = `
+        <a href="/" class="hover:text-blue-200 transition">Beranda</a>
+        <a href="/dashboard.html" class="hover:text-blue-200 transition">Dashboard</a>
+        <span class="text-blue-200">Halo, ${user.name}</span>
+        <button onclick="logout()" class="hover:text-blue-200 transition">Logout</button>
+      `;
+    }
+
+    function logout() {
+      if (confirm('Apakah Anda yakin ingin logout?')) {
+        fetch('/logout', {
+          method: 'POST',
+          credentials: 'include'
+        }).then(() => {
+          window.location.reload();
+        });
+      }
+    }
+
     // Fungsi untuk mengecek autentikasi dan mengarahkan ke halaman daftar
     function checkAuthAndRedirect() {
       // Cek apakah user sudah login dengan mencoba mengakses endpoint yang memerlukan auth
-      fetch('/daftar', {
+      fetch('/check-auth', {
         method: 'GET',
         credentials: 'include'
       })
       .then(response => {
         if (response.ok) {
           // User sudah login, redirect ke halaman daftar
-          window.location.href = '/daftar.html';
-        } else if (response.status === 401) {
+          window.location.href = '/daftar';
+        } else {
           // User belum login, tampilkan alert
           alert('⚠️ Silakan login terlebih dahulu untuk mendaftar seminar!\n\nAnda akan diarahkan ke halaman login.');
           window.location.href = '/login.html';
-        } else {
-          alert('Terjadi kesalahan. Silakan coba lagi.');
         }
       })
       .catch(error => {
