@@ -2,16 +2,282 @@
 <html lang="id">
 <head>
   <meta charset="UTF-8" />
-  <title>Dashboard User</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dashboard User - Sistem Pendaftaran Seminar</title>
   <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body class="bg-gray-100 p-6">
-  <div class="max-w-2xl mx-auto bg-white shadow p-6 rounded">
-    <h1 class="text-2xl font-bold mb-4">Dashboard User</h1>
-    <form action="/upload" method="POST" enctype="multipart/form-data" class="space-y-4">
-      <input type="file" name="berkas" required class="block w-full border px-4 py-2 rounded" />
-      <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">Upload Berkas</button>
-    </form>
+<body class="bg-gray-100 min-h-screen">
+  <!-- Header -->
+  <header class="bg-blue-600 text-white shadow-lg">
+    <div class="container mx-auto px-4 py-4">
+      <div class="flex justify-between items-center">
+        <h1 class="text-xl font-bold">Dashboard User</h1>
+        <nav class="flex space-x-4 items-center">
+          <span id="userName" class="text-blue-200">Loading...</span>
+          <a href="/" class="hover:text-blue-200 transition">Beranda</a>
+          <button onclick="logout()" class="bg-blue-800 hover:bg-blue-900 px-3 py-1 rounded transition">
+            Logout
+          </button>
+        </nav>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Content -->
+  <main class="container mx-auto px-4 py-8">
+    <!-- Welcome Section -->
+    <section class="bg-white rounded-lg shadow-md p-6 mb-8">
+      <h2 class="text-2xl font-bold text-gray-800 mb-4">Selamat Datang di Dashboard</h2>
+      <p class="text-gray-600">Kelola pendaftaran seminar dan berkas Anda di sini.</p>
+    </section>
+
+    <!-- Quick Actions -->
+    <section class="grid md:grid-cols-3 gap-6 mb-8">
+      <div class="bg-white p-6 rounded-lg shadow-md">
+        <div class="text-blue-600 text-3xl mb-4">📝</div>
+        <h3 class="text-xl font-semibold mb-2">Daftar Seminar</h3>
+        <p class="text-gray-600 mb-4">Daftarkan diri Anda untuk mengikuti seminar</p>
+        <a href="/daftar" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded transition">
+          Daftar Sekarang
+        </a>
+      </div>
+      
+      <div class="bg-white p-6 rounded-lg shadow-md">
+        <div class="text-green-600 text-3xl mb-4">📄</div>
+        <h3 class="text-xl font-semibold mb-2">Upload Berkas</h3>
+        <p class="text-gray-600 mb-4">Upload berkas pendukung seminar</p>
+        <button onclick="showUploadModal()" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded transition">
+          Upload Berkas
+        </button>
+      </div>
+      
+      <div class="bg-white p-6 rounded-lg shadow-md">
+        <div class="text-purple-600 text-3xl mb-4">📊</div>
+        <h3 class="text-xl font-semibold mb-2">Status Pendaftaran</h3>
+        <p class="text-gray-600 mb-4">Lihat status pendaftaran seminar Anda</p>
+        <button onclick="checkStatus()" class="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded transition">
+          Cek Status
+        </button>
+      </div>
+    </section>
+
+    <!-- Status Pendaftaran -->
+    <section class="bg-white rounded-lg shadow-md p-6 mb-8">
+      <h3 class="text-xl font-bold mb-4">Status Pendaftaran Saya</h3>
+      <div id="statusContent">
+        <p class="text-gray-500">Memuat data...</p>
+      </div>
+    </section>
+
+    <!-- Sertifikat Section -->
+    <section id="sertifikatSection" class="bg-white rounded-lg shadow-md p-6 hidden">
+      <h3 class="text-xl font-bold mb-4">🎓 Sertifikat Anda</h3>
+      <div id="sertifikatContent">
+        <!-- Konten sertifikat akan dimuat di sini -->
+      </div>
+    </section>
+  </main>
+
+  <!-- Upload Modal -->
+  <div id="uploadModal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50">
+    <div class="flex items-center justify-center min-h-screen p-4">
+      <div class="bg-white rounded-lg p-6 w-full max-w-md">
+        <div class="flex justify-between items-center mb-4">
+          <h3 class="text-lg font-bold">Upload Berkas</h3>
+          <button onclick="closeUploadModal()" class="text-gray-500 hover:text-gray-700">
+            ✕
+          </button>
+        </div>
+        
+        <form id="uploadForm" class="space-y-4">
+          <div>
+            <label for="emailUpload" class="block text-sm font-medium text-gray-700">Email (untuk verifikasi)</label>
+            <input type="email" id="emailUpload" name="email" required
+              class="mt-1 block w-full rounded-md border-gray-300 border px-3 py-2 focus:border-blue-500 focus:outline-none" />
+          </div>
+
+          <div>
+            <label for="berkasUpload" class="block text-sm font-medium text-gray-700">Pilih Berkas (PDF, max 2MB)</label>
+            <input type="file" id="berkasUpload" name="berkas" accept=".pdf" required
+              class="mt-1 block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:border file:rounded-md file:border-gray-300 file:text-sm file:bg-gray-50 hover:file:bg-gray-100" />
+          </div>
+
+          <div class="flex justify-end space-x-2">
+            <button type="button" onclick="closeUploadModal()" 
+              class="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded">
+              Batal
+            </button>
+            <button type="submit"
+              class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded">
+              Upload Berkas
+            </button>
+          </div>
+        </form>
+
+        <div id="uploadStatus" class="mt-4 text-sm text-green-600 hidden">
+          ✅ Berkas berhasil diunggah.
+        </div>
+      </div>
+    </div>
   </div>
+
+  <script>
+    // Load user info and status saat halaman dimuat
+    window.addEventListener('load', () => {
+      loadUserInfo();
+      loadUserStatus();
+    });
+
+    async function loadUserInfo() {
+      try {
+        const response = await fetch('/check-auth', {
+          credentials: 'include'
+        });
+        
+        if (response.ok) {
+          const data = await response.json();
+          document.getElementById('userName').textContent = `Halo, ${data.user.name}`;
+        } else {
+          // User tidak login, redirect ke login
+          window.location.href = '/login.html';
+        }
+      } catch (error) {
+        console.error('Error loading user info:', error);
+        window.location.href = '/login.html';
+      }
+    }
+
+    async function loadUserStatus() {
+      try {
+        const response = await fetch('/peserta', {
+          credentials: 'include'
+        });
+        
+        if (response.ok) {
+          const pesertaData = await response.json();
+          const userResponse = await fetch('/check-auth', { credentials: 'include' });
+          const userData = await userResponse.json();
+          
+          // Filter data peserta berdasarkan user yang login
+          const userPeserta = pesertaData.filter(p => p.user_id === userData.user.id);
+          
+          displayUserStatus(userPeserta);
+        }
+      } catch (error) {
+        console.error('Error loading status:', error);
+        document.getElementById('statusContent').innerHTML = 
+          '<p class="text-red-500">Gagal memuat status pendaftaran.</p>';
+      }
+    }
+
+    function displayUserStatus(pesertaData) {
+      const statusContent = document.getElementById('statusContent');
+      
+      if (pesertaData.length === 0) {
+        statusContent.innerHTML = `
+          <p class="text-gray-500">Anda belum mendaftar seminar apapun.</p>
+          <a href="/daftar" class="inline-block mt-2 bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
+            Daftar Seminar
+          </a>
+        `;
+        return;
+      }
+
+      let statusHTML = '<div class="space-y-4">';
+      
+      pesertaData.forEach(peserta => {
+        const statusColor = peserta.status === 'Lulus' ? 'text-green-600' : 
+                           peserta.status === 'Pending' ? 'text-yellow-600' : 'text-red-600';
+        
+        statusHTML += `
+          <div class="border rounded-lg p-4">
+            <div class="flex justify-between items-start">
+              <div>
+                <h4 class="font-semibold">${peserta.nama}</h4>
+                <p class="text-sm text-gray-600">${peserta.email}</p>
+                <p class="text-sm ${statusColor} font-medium">Status: ${peserta.status}</p>
+              </div>
+              ${peserta.status === 'Lulus' ? 
+                `<a href="/sertifikat/${peserta.id}" target="_blank" 
+                   class="bg-green-600 text-white px-3 py-1 rounded text-sm hover:bg-green-700">
+                  Download Sertifikat
+                </a>` : ''}
+            </div>
+          </div>
+        `;
+      });
+      
+      statusHTML += '</div>';
+      statusContent.innerHTML = statusHTML;
+
+      // Show certificate section if user has completed seminars
+      const hasCompletedSeminar = pesertaData.some(p => p.status === 'Lulus');
+      if (hasCompletedSeminar) {
+        document.getElementById('sertifikatSection').classList.remove('hidden');
+      }
+    }
+
+    function showUploadModal() {
+      document.getElementById('uploadModal').classList.remove('hidden');
+    }
+
+    function closeUploadModal() {
+      document.getElementById('uploadModal').classList.add('hidden');
+      document.getElementById('uploadForm').reset();
+      document.getElementById('uploadStatus').classList.add('hidden');
+    }
+
+    function checkStatus() {
+      loadUserStatus();
+    }
+
+    function logout() {
+      if (confirm('Apakah Anda yakin ingin logout?')) {
+        fetch('/logout', {
+          method: 'POST',
+          credentials: 'include'
+        }).then(() => {
+          window.location.href = '/';
+        });
+      }
+    }
+
+    // Handle upload form
+    document.getElementById('uploadForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      const form = e.target;
+      const email = form.email.value;
+      const fileInput = document.getElementById('berkasUpload');
+
+      const formData = new FormData();
+      formData.append('email', email);
+      formData.append('berkas', fileInput.files[0]);
+
+      try {
+        const res = await fetch('/upload', {
+          method: 'POST',
+          body: formData,
+          credentials: 'include'
+        });
+
+        if (res.ok) {
+          document.getElementById('uploadStatus').classList.remove('hidden');
+          form.reset();
+          
+          // Refresh status after upload
+          setTimeout(() => {
+            loadUserStatus();
+            closeUploadModal();
+          }, 2000);
+        } else {
+          alert('❌ Gagal upload. Pastikan file PDF dan email valid.');
+        }
+      } catch (error) {
+        console.error('Upload error:', error);
+        alert('❌ Terjadi kesalahan saat upload.');
+      }
+    });
+  </script>
 </body>
 </html>

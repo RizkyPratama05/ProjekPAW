@@ -101,6 +101,16 @@ app.get('/peserta', (req, res) => {
   });
 });
 
+// Ambil peserta berdasarkan user yang login
+app.get('/my-registrations', requireAuth, (req, res) => {
+  const userId = req.session.user.id;
+  const query = 'SELECT * FROM peserta WHERE user_id = ?';
+  db.query(query, [userId], (err, results) => {
+    if (err) return res.status(500).send(err);
+    res.json(results);
+  });
+});
+
 // Verifikasi status peserta
 app.put('/verifikasi/:id', (req, res) => {
   const { id } = req.params;

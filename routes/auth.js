@@ -58,7 +58,11 @@ router.post('/login', (req, res) => {
       role: user.role
     };
 
-    res.redirect('/dashboard.html'); // Ganti nanti kalau pakai halaman berbeda
+    // Kembalikan JSON response untuk login berhasil
+    return res.status(200).json({ 
+      message: 'Login berhasil!', 
+      user: { id: user.id, name: user.name, role: user.role } 
+    });
   });
 });
 
